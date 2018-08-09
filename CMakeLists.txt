@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(GUnit-hwc CXX)
 
-option(ENABLE_MEMCHECK "Run the unit tests and examples under valgrind if it is found." OFF)
+option(ENABLE_MEMCHECK "Run the unit tests under valgrind if it is found." OFF)
 option(ENABLE_COVERAGE "Run coverage." ON)
 
 add_custom_target(style)
@@ -18,8 +18,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DUSE_VK")
 
 if (ENABLE_COVERAGE)
@@ -41,6 +39,22 @@ include_directories(SYSTEM
   ${gmock_SOURCE_DIR}/include
 )
 
+#
+# HWC-specific
+#
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../public)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../os/android)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../system/core/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../external/minigbm/cros_gralloc)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../hardware/libhardware/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../frameworks/native/libs/ui/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../frameworks/native/libs/nativebase/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../frameworks/native/libs/arect/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../vendor/intel/external/project-celadon/hwcomposer/os)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../vendor/intel/external/project-celadon/mesa/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../../../../../../vendor/intel/external/project-celadon/libdrm/include/drm)
+
+
 find_program(MEMORYCHECK_COMMAND valgrind)
 if (ENABLE_MEMCHECK AND MEMORYCHECK_COMMAND)
   function(test name scenario)
@@ -60,15 +74,20 @@ else()
   endfunction()
 endif()
 
+#
+# HWC-specific
+#
+include_directories(unitTest)
+test (unitTest/HWCGUnitTest SCENARIO=)
+
+#
+# {NOTE: TO DISABLE BASIC EXAMPLES, COMMENT OUT "#[[" and "]]"}
+#
+#[[
 test(example/GMock SCENARIO=)
 test(example/GTest SCENARIO=)
 test(example/GTest-Lite SCENARIO=)
 
-
-#
-# {NOTE: TO DISBLE BASIC EXAMPLES, COMMENT OUT "#[[" and "]]"}
-#
-#[[
 include_directories(test)
 test(test/GMake SCENARIO=)
 test(test/GMock SCENARIO=)
@@ -90,3 +109,4 @@ test(benchmark/gtest/test SCENARIO=)
 #
 # {END NOTE}
 #
+
